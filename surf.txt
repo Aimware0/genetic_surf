@@ -1,0 +1,8 @@
+"surf"
+{
+	"base"		"base"
+	"title"		"Genetic Surf"
+	"maps"		"^"
+	"category"	"other"
+	"menusystem"	"1"
+}
