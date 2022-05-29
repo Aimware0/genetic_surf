@@ -59,7 +59,6 @@ function Agent:Reset()
     self:ClearActions()
 end
 
-
 function Agent:GenerateRandomActions(seconds)
     local actions = {}
     local tickrate = 1 / engine.TickInterval()
@@ -68,6 +67,54 @@ function Agent:GenerateRandomActions(seconds)
         table.insert(actions, self:GetRandomAction())
     end
     return actions
+end
+
+
+function Agent:CrossOver(other_agent)
+
+    --[[ 
+        If the other agents actions length is not equal to ours, append the other agents last actions to ours and vice versa
+        But we should crossover when we can. (average the actions).
+    ]]
+    local my_actions = self:GetActions()
+    local other_actions = other_agent:GetActions()
+
+    local crossover_actions = {}
+
+    local function breed(a,b)
+        return {
+            yaw = math.random(a.yaw, b.yaw),
+            pitch = math.random(a.pitch, b.pitch),
+
+            forwardspeed = math.random(a.forwardspeed, b.forwardspeed),
+            sidemove = math.random(a.sidemove, b.sidemove),
+        }
+    end
+
+
+    if #my_actions == #other_actions then
+        for i=1, #my_actions do
+            table.insert(crossover_actions, breed(my_actions[i], other_actions[i]))
+        end
+    else
+        -- Append the last actions of the other agent to ours or vice versa
+        if #my_actions > #other_actions then
+            for i=1, #other_actions do
+                table.insert(crossover_actions, breed(my_actions[i], other_actions[i]))
+            end
+            for i=#other_actions+1, #my_actions do
+                other_actions[i] = my_actions[i]
+            end
+        else
+            for i=1, #my_actions do
+                table.insert(crossover_actions, breed(my_actions[i], other_actions[i]))
+            end
+            for i=#my_actions+1, #other_actions do
+                my_actions[i] = other_actions[i]
+            end
+        end
+    end
+    return crossover_actions
 end
 
 function Agent:Think(cmd)

@@ -1,21 +1,15 @@
 -- References https://en.wikipedia.org/wiki/Genetic_algorithm , https://www.youtube.com/watch?v=9zfeTw-uFCw
 include("agent.lua")
 include("utils.lua")
-local agents = {}
 
-local me = function()
-    for k, v in pairs(player.GetAll()) do
-        if not v:IsBot() then
-            return v
-        end
-    end
-end
-
-local function sort_by_fitness(a, b) if a and b then return a:GetFitness() > b:GetFitness() end end
 local target = Vector(0, 2798, 10198)
 
-local reset_timer = 10 -- When to reset the bots back to the start
+local agents = {}
 local data_pool = {}
+
+local reset_timer = 10 -- When to reset the bots back to the start
+local iterations = 10
+
 
 local function get_fitness(data)
     local lowest_dist = math.huge
@@ -46,17 +40,27 @@ end
 timer.Create("reset_bots", reset_timer, 0, function()
     print("Resetting bots")
     for k, v in pairs(agents) do
-        table.insert(data_pool, v:GetActions())
+       local fitness = get_fitness(v:GetActions())
+       for i=0, fitness do
+            table.insert(data_pool, v:GetActions())
+       end
         v:Reset()
         v.actions = v:GenerateRandomActions(reset_timer)
     end
-    best, best_fitness = get_best_fitness()
-    print("Best fitness: " .. best_fitness)
-    -- Sort the fitness of the agents.
-    -- Entity:SetPreventTransmit( Player player, boolean stopTransmitting )
-    -- Only allow the top 3 to transmit.
-  
 end)
+
+
+hook.Add( "OnTeleport", "reset", function()
+    local activator, caller = ACTIVATOR, CALLER
+    local agent = activator:GetVar("agent")
+    if agent then
+        local fitness = get_fitness(agent:GetActions())
+        for i=0, fitness do
+            table.insert(data_pool, agent:GetActions())
+        end
+    end
+end)
+
 
 hook.Add("PlayerSpawn", "setup_agent", function(ply)
     if ply:IsBot() and agents[ply:EntIndex()] == nil then
@@ -80,28 +84,21 @@ hook.Add("StartCommand", "agent_think", function(ply, cmd)
     end
 
     if engine.TickCount() % 64 == 0 then
-        -- if agent then
-        --     agent:Think(cmd)
-        -- end
-        print("TickCount" .. cmd:TickCount())
-    -- table.sort(agents, sort_by_fitness)
-
+        -- table.sort(agents, sort_by_fitness)
     end
 
     if agent then
         agent:Think(cmd)
     end
 
-    for i = 1, #agents do
-        local v = agents[i]
-        if v then
-            if i < 4 then
-                v.ply:SetPreventTransmit(me(), false)
-            else
-                v.ply:SetPreventTransmit(me(), true)
-            end
-        end
-    end
-
-   
+    -- for i = 1, #agents do
+    --     local v = agents[i]
+    --     if v then
+    --         if i < 4 then
+    --             v.ply:SetPreventTransmit(me(), false)
+    --         else
+    --             v.ply:SetPreventTransmit(me(), true)
+    --         end
+    --     end
+    -- end
 end)
