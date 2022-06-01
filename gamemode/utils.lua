@@ -13,7 +13,7 @@ function map(n, n_min, n_max, m_min, m_max)
     return (n - n_min) * (m_max - m_min) / (n_max - n_min) + m_min
 end
 
-local function sort_by_fitness(a, b) if a and b then return a:GetFitness() > b:GetFitness() end end
+local function sort_by_fitness(a, b) if a and b then return a:CalcFitness() > b:CalcFitness() end end
 
 local me = function()
     for k, v in pairs(player.GetAll()) do

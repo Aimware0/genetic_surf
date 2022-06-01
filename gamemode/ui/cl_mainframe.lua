@@ -16,6 +16,8 @@ local MainFrame = {
         slider:SetText("Bots")
         slider:SetMin(1)
         slider:SetMax(128)
+        -- slider:SetD
+        slider:SetValue(5)
         slider:SetDecimals(0)
 
         local add_bots_btn = vgui.Create("DButton", self)

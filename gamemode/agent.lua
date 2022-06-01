@@ -2,8 +2,15 @@
 Agent = {
     actions = {},
     action_index = 1,
+    fitness = 0,
+    fell = false,
+    tick = 0,
+    switch = true,
+    times_fell = 0,
 }
 
+
+local respawn_point = spawn_pos -- Where the bots respawn
 
 function Agent:new(o)
     o = o or {}
@@ -12,19 +19,45 @@ function Agent:new(o)
     return o
 end
 
-function Agent:GetAvgDistance()
+function Agent:GetAvgDistance(target)
     local sum = 0
     for i, v in ipairs(self.actions) do
         if v.pos then
-            sum = sum + v.pos:Distance(self.target)
+            sum = sum + v.pos:Distance(target)
         end     
     end
+    print("Sum of average distance is " .. tostring(sum))
     return sum / #self.actions
 end
 
-function Agent:GetFitness()
-    return math.ceil(map(self:GetAvgDistance() , 0, 3000, 100, 0))   
+function Agent:GetLowestDistance(target)
+    local lowest_dist = math.huge
+    local lowest = nil
+    for i, v in ipairs(self.actions) do
+        if v.pos then
+            local distance = v.pos:Distance(target)
+            if distance < lowest_dist then
+                lowest = v
+                lowest_dist = distance
+            end
+        end
+    end
+    return lowest_dist, lowest
 end
+
+function Agent:CalcFitness(target)
+    local lowest_dist, lowest = self:GetLowestDistance(target)
+    local fitness = math.floor(map(lowest_dist , 0, respawn_point:Distance(target), 30, 0))
+    fitness = fitness * math.floor(map(CurTime() - lowest.time, 0, 15, 2, 1))
+    -- Reduce the fitness if the bot fell often.
+    if self.times_fell > 0 then
+        fitness = fitness / self.times_fell
+    end
+    self.fitness = fitness
+    return fitness
+end
+
+
 
 function Agent:AddAction(action)
     table.insert(self.actions, action)
@@ -41,92 +74,65 @@ end
 
 function Agent:GetRandomAction()
     return {
-        pitch = math.random(-89, 89),
-        yaw = math.random(-180, 180),
+        -- pitch = math.random(-89, 89),
+        -- yaw = math.random(-180, 180),
+        
+       
 
-        forwardspeed = math.random(-250, 250),
-        sidemove = math.random(-250, 250),
+        forwardspeed = math.random(0,1) == 1 and 450 or -450,
+        sidemove = math.random(0,1) == 1 and 450 or -450,
+
+         pitch = 0,
+        yaw = 0,
+        -- forwardspeed = 0,
+        -- sidemove = 0,
     }
 end
 
-
-function Agent:SetTarget(target)
-    self.target = target
-end
-
 function Agent:Reset()
-    self.ply:SetPos(Vector(59.20, -141.36, 10143.03))
-    self:ClearActions()
+    self.ply:SetPos(spawn_pos)
+    self.action_index = 1
+    self.fell = false
 end
+
+local j = 0
 
 function Agent:GenerateRandomActions(seconds)
+
     local actions = {}
     local tickrate = 1 / engine.TickInterval()
     local ticks = seconds * tickrate
     for i = 1, ticks do
-        table.insert(actions, self:GetRandomAction())
+        if ticks % 33 == 0 then
+            self.switch = not self.switch
+        end
+        if self.switch then
+            table.insert(actions, self:GetRandomAction())
+        else
+            table.insert(actions, self:GetActions()[#self.actions])
+        end
     end
     return actions
 end
 
 
-function Agent:CrossOver(other_agent)
-
-    --[[ 
-        If the other agents actions length is not equal to ours, append the other agents last actions to ours and vice versa
-        But we should crossover when we can. (average the actions).
-    ]]
-    local my_actions = self:GetActions()
-    local other_actions = other_agent:GetActions()
-
-    local crossover_actions = {}
-
-    local function breed(a,b)
-        return {
-            yaw = math.random(a.yaw, b.yaw),
-            pitch = math.random(a.pitch, b.pitch),
-
-            forwardspeed = math.random(a.forwardspeed, b.forwardspeed),
-            sidemove = math.random(a.sidemove, b.sidemove),
-        }
-    end
-
-
-    if #my_actions == #other_actions then
-        for i=1, #my_actions do
-            table.insert(crossover_actions, breed(my_actions[i], other_actions[i]))
-        end
-    else
-        -- Append the last actions of the other agent to ours or vice versa
-        if #my_actions > #other_actions then
-            for i=1, #other_actions do
-                table.insert(crossover_actions, breed(my_actions[i], other_actions[i]))
-            end
-            for i=#other_actions+1, #my_actions do
-                other_actions[i] = my_actions[i]
-            end
-        else
-            for i=1, #my_actions do
-                table.insert(crossover_actions, breed(my_actions[i], other_actions[i]))
-            end
-            for i=#my_actions+1, #other_actions do
-                my_actions[i] = other_actions[i]
-            end
-        end
-    end
-    return crossover_actions
-end
 
 function Agent:Think(cmd)
     if #self.actions >= self.action_index then
+        -- print(1)
         local action = self.actions[self.action_index]
         cmd:SetViewAngles(Angle(action.pitch, action.yaw, 0))
         cmd:SetForwardMove(action.forwardspeed)
         cmd:SetSideMove(action.sidemove)
-        self.actions[self.action_index].pos = self.ply:GetPos()
+        if self.action_index > 1 then
+            self.actions[self.action_index-1].pos = self.ply:GetPos()
+            self.actions[self.action_index-1].time = CurTime()
+        else
+            self.actions[self.action_index].pos = self.ply:GetPos()
+        end
         self.action_index = self.action_index + 1
     else
-        -- print("All out.")
+        -- print("All out.", #self.actions, self.action_index)
     end
 end
 

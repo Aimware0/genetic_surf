@@ -24,11 +24,12 @@ concommand.Add("kill_all", function()
 end)
 
 
-concommand.Add("noclip", function(ply)
+concommand.Add("noclip2", function(ply)
     if ply:GetMoveType() == MOVETYPE_NOCLIP then
         ply:SetMoveType(MOVETYPE_WALK)
     else
         ply:SetMoveType(MOVETYPE_NOCLIP)
+        print("SET NOCLIP")
     end
 end)
 

@@ -7,6 +7,7 @@ include( "shared.lua" )
 include("genetic_algorthim.lua")
 include("sv_commands.lua")
 
+
 local airaccelerate_difficulties = {
 	Hard = 100,
 	['Semi hard'] = 150,
@@ -19,19 +20,22 @@ local airaccelerate_difficulties = {
 function GM:Initialize()
 	RunConsoleCommand("sv_accelerate", "10")
 	RunConsoleCommand("sv_airaccelerate", airaccelerate_difficulties["Extra easy"])
+    RunConsoleCommand("bot_zombie", "1")
+    -- RunConsoleCommand("sv_cheats", "1")
 end
 
 
 function GM:PlayerSpawn(ply)
     ply:SetModel("models/player/putin.mdl")
     ply:SetCollisionGroup(10)
-    ply:SetPos(Vector(59.20, -141.36, 10143.03))
+    ply:SetPos(spawn_pos)
+    ply:SetWalkSpeed(450)
 end
 
 
 hook.Add( "OnTeleport", "TestTeleportHook", function()
     local activator, caller = ACTIVATOR, CALLER
-    activator:SetPos(Vector(59.20, -141.36, 10143.03))
+    activator:SetPos(spawn_pos)
 end )
 
 
