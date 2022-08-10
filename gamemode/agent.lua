@@ -45,9 +45,13 @@ function Agent:GetLowestDistance(target)
     return lowest_dist, lowest
 end
 
+
+
+
 function Agent:CalcFitness(target)
-    local lowest_dist, lowest = self:GetLowestDistance(target)
-    local fitness = math.floor(map(lowest_dist , 0, respawn_point:Distance(target), 30, 0))
+    -- local lowest_dist, lowest = self:GetLowestDistance(target)
+    local dist = self.actions[#self.actions].pos:Distance(target)
+    local fitness = math.floor(map(0 , 0, respawn_point:Distance(target), 30, 0))
     fitness = fitness * math.floor(map(CurTime() - lowest.time, 0, 15, 2, 1))
     -- Reduce the fitness if the bot fell often.
     if self.times_fell > 0 then

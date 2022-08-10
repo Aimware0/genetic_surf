@@ -9,8 +9,16 @@ GM.Description = "A surf gamemode for the genetic/evolutionary algoritm."
 DeriveGamemode("base")
 -- target = Vector(-139.213165 ,-863.968750 ,10208.031250)
 -- 5.058260 206.548828 10159.875000
-target = Vector(-6939.958496 ,-3064.713135 ,-3519.968750)
-spawn_pos = Vector(-12410.656250 ,-3384.428223 ,-895.245117)
+
+
+target_pos = string.Split("-1007.968750 -1903.968750 -79.968750", " ")
+spawn_pos = string.Split("-1347.771851 -954.932068 -79.968750", " ")
+
+
+
+spawn_pos = Vector(tonumber(spawn_pos[1]), tonumber(spawn_pos[2]), tonumber(spawn_pos[3]))
+target_pos = Vector(tonumber(target_pos[1]), tonumber(target_pos[2]), tonumber(target_pos[3]))
+
 
 
 if SERVER then

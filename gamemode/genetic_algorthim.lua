@@ -2,7 +2,6 @@
 include("agent.lua")
 include("utils.lua")
 
--- local target = Vector(-2.672320, 1076.718994, 10084.031250)
 
 
 function deep_copy_table(tbl)
@@ -33,7 +32,8 @@ end
 
     CalcFitness = function(self)
         for _, v in pairs(self.population) do
-            v:CalcFitness(target)
+            
+            v:CalcFitness(target_pos)
         end
     end,
 
@@ -42,7 +42,7 @@ end
     NaturalSelection = function(self)
         self.mating_pool = {}
         for k, v in pairs(self.population) do
-            local fitness = v:CalcFitness(target)
+            local fitness = v:CalcFitness(target_pos)
             if fitness then
                 -- fitness = v.fell and fitness / 10 or fitness
                 for i = 1, fitness do

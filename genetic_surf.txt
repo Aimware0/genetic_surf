@@ -1,6 +1,6 @@
-"surf"
+"genetic_surf"
 {
-	"base"		"base"
+	"base"		"sandbox"
 	"title"		"Genetic Surf"
 	"maps"		"^"
 	"category"	"other"
